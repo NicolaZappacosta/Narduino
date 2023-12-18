@@ -5,19 +5,18 @@ flight_computer::step(){
     getCmd();
     runNavigation();
 };
-void flight_computer::getImuData(double *acceleration, double *angular_rate, float *temperature){
-    imu.get(acceleration, angular_rate, temperature);
+void flight_computer::getImuData(ImuData* data){
+    imu.get(data);
     return;
 };
-void flight_computer::setImu(mpu6050_accel_range_t accel_setting, mpu6050_gyro_range_t gyro_setting){
-    imu.set_imu_driver(accel_setting, gyro_setting);
+void flight_computer::setImu(ImuSettings* settings){
+    imu.set_imu_driver(settings);
 };
 
 void flight_computer::runNavigation(){
     
-    double acceleration_meas[3];
-    double angular_rate_meas[3];
-    /*Hardcoded for now from the phone data singe the 9-DOF sensor in not available
+    ImuData data;
+    /*Hardcoded for now from the phone data since the 9-DOF sensor in not available
     You should implement a GNSS driver for this.
     */
     double position_meas[3] = {48.359733, 10.871368, 507};
@@ -27,12 +26,20 @@ void flight_computer::runNavigation(){
     NAVIGATION_STATE _navigation_state; // This can be centralized in struct()
     _navigation_state = map2NavigationState(_navigation_state);
 
-    imu.get(acceleration_meas, angular_rate_meas, &temperature_meas);
+    getImuData(&data);
+
+    // Interface layer - remove whenever possible
+    double acceleration_meas[3];
+    double angular_rate_meas[3];
+    for(int i; i<3; i++){
+        acceleration_meas[i] = data.acceleration[i];
+        angular_rate_meas[i] = data.angularRate[i];
+    }
+
     nav.step(_navigation_state, acceleration_meas, angular_rate_meas, position_meas, velocity_meas, &heading_meas);
 };
 
 NAVIGATION_STATE flight_computer::map2NavigationState(NAVIGATION_STATE _navigation_state){
-    Serial.println("Let's go");
     switch (_current_state){
         case FC_IDLE:
             _navigation_state = IDLE;
@@ -73,7 +80,7 @@ void flight_computer::getCmd(){
     const int MAX_STRING_LENGTH = 12; // To define the right place for this
     static char message[MAX_STRING_LENGTH];
     static int message_position = 0;
-    
+    // The command should be generalized and handled by a telemetry interface
     while (Serial.available()>0 && message_position<MAX_STRING_LENGTH-1){
         char inByte = Serial.read();
         Serial.println(inByte);
@@ -122,118 +129,6 @@ void flight_computer::getCmd(){
             };
         }
     }
-};
-
-void flight_computer::print2Serial(){
-
-    double a[3];
-    double g[3];
-    float temp;
-    
-    getImuData(a, g, &temp);
-
-    /* Print out the values */
-    Serial.print("FC STATE = ");
-    switch (_current_state) {
-        case FC_IDLE:
-            Serial.println("IDLE");
-            break;
-        case FC_RESET:
-            Serial.println("RESET");
-            break;
-        case FC_INITIALIZATION:
-            Serial.println("INITIALIZATION");
-            break;
-        case FC_STATIC_TUNING:
-            Serial.println("STATIC_TUNING");
-            break;
-        case FC_DYNAMIC_TUNING: // implement when 9 DOF is available
-            Serial.println("DYNAMIC_TUNING");
-            break;
-        case FC_NOMINAL:
-            Serial.println("NOMINAL");
-            break;
-        case FC_AUGMENTED_NOMINAL:
-            Serial.println("AUGMENTED_NOMINAL");
-            break;
-        default:
-            Serial.println("Unknown state");
-    };
-
-    NAVIGATION_STATE _navigation_state; // This can be centralized in struct()
-    _navigation_state = map2NavigationState(_navigation_state);
-
-    Serial.print("NAV STATE = ");
-    switch (_navigation_state) {
-        case IDLE:
-            Serial.println("IDLE");
-            break;
-        case RESET:
-            Serial.println("RESET");
-            break;
-        case INITIALIZATION:
-            Serial.println("INITIALIZATION");
-            break;
-        case STATIC_TUNING:
-            Serial.println("STATIC_TUNING");
-            break;
-        case DYNAMIC_TUNING: // implement when 9 DOF is available
-            Serial.println("DYNAMIC_TUNING");
-            break;
-        case NOMINAL:
-            Serial.println("NOMINAL");
-            break;
-        case AUGMENTED_NOMINAL:
-            Serial.println("AUGMENTED_NOMINAL");
-            break;
-        default:
-            Serial.println("Unknown state");
-    };
-
-    /*
-    //Serial.print(*fc_state);
-    Serial.println("-------------------------------------");
-    Serial.print("Acceleration X: ");
-    Serial.print(a[0]);
-    Serial.print(", Y: ");
-    Serial.print(a[1]);
-    Serial.print(", Z: ");
-    Serial.print(a[2]);
-    Serial.println(" m/s^2");
-
-    Serial.print("Rotation X: ");
-    Serial.print(g[0]);
-    Serial.print(", Y: ");
-    Serial.print(g[1]);
-    Serial.print(", Z: ");
-    Serial.print(g[2]);
-    Serial.println(" rad/s");
-
-    Serial.print("Temperature: ");
-    Serial.print(temp);
-    Serial.println(" degC");
-
-    Serial.println("");
-    */
-    /**/
-    //Get navigation estimated state
-    double estimated_position[3];
-    double estimated_velocity[3];
-    double estimated_quaternion[4];
-    
-
-    getNavigationState(estimated_position, estimated_velocity, estimated_quaternion);
-
-    Serial.println("Navigation state ----------------------------");
-    Serial.print("Quaternion: q_0 =");
-    Serial.print(estimated_quaternion[0]);
-    Serial.print(", q_1 =");
-    Serial.print(estimated_quaternion[1]);
-    Serial.print(", q_2 =");
-    Serial.print(estimated_quaternion[2]);
-    Serial.print(", q_3 = ");
-    Serial.print(estimated_quaternion[3]);
-    
 };
 
 void flight_computer::getNavigationState(double *estimated_position, double *estimated_velocity, double *estimated_quaternion){

@@ -8,13 +8,16 @@ executing the classes for the flight computer etc
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
 #include "./src/fc/flight_computer.h"
-
+#include "./src/imu/imu_structs.h"
 flight_computer fc;
 
 void setup(void) {
+  ImuSettings settings;
   Serial.begin(115200);
   Serial.print("ciao");
-  fc.setImu(MPU6050_RANGE_8_G, MPU6050_RANGE_500_DEG);
+  settings.ACCELEROMETERS_RANGE = 8;
+  settings.GYROSCPOPES_RANGE = 500;
+  fc.setImu(&settings);
   Serial.print("Ciao");
   delay(10);
 }
@@ -22,6 +25,5 @@ void setup(void) {
 void loop() {
   Serial.print("Ciao");
   fc.step();
-  fc.print2Serial();
   delay(1000);
 }

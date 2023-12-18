@@ -1,6 +1,46 @@
 #include "./imu_driver.h"
 
-imu_driver::set_imu_driver(mpu6050_accel_range_t accel_setting, mpu6050_gyro_range_t gyro_setting){
+/*
+PRIVATE METHODS ----------------------------------------------------------
+*/
+void imu_driver::_set_accelerometers(ImuSettings* settings){
+  
+  // The settings shall be extended 
+  mpu6050_accel_range_t range_setting;
+  // The switch case shall be extended
+  switch (settings->ACCELEROMETERS_RANGE)
+  {
+  case 8:
+    range_setting = MPU6050_RANGE_8_G;
+    break;
+  default:
+    break;
+  }
+  mpu.setAccelerometerRange(range_setting);
+  return;
+}
+
+void imu_driver::_set_gyroscopes(ImuSettings* settings){
+  
+  // The settings shall be extended 
+  mpu6050_gyro_range_t range_setting;
+  // The switch case shall be extended
+  switch (settings->ACCELEROMETERS_RANGE)
+  {
+  case 500:
+    range_setting = MPU6050_RANGE_500_DEG;
+    break;
+  default:
+    break;
+  }
+  mpu.setGyroRange(range_setting);
+  return;
+}
+
+/*
+PUBLIC METHODS -----------------------------------------------------------
+*/
+void imu_driver::set_imu_driver(ImuSettings* settings){
     // Try to initialize!
   if (!mpu.begin()) {
     while (1) {
@@ -8,20 +48,36 @@ imu_driver::set_imu_driver(mpu6050_accel_range_t accel_setting, mpu6050_gyro_ran
     }
   }
 
-  mpu.setAccelerometerRange(accel_setting);
-  mpu.setGyroRange(gyro_setting);
+  _set_accelerometers(settings);
+  _set_gyroscopes(settings);
+  // Here a wrapper function shall be created
   mpu.setFilterBandwidth(MPU6050_BAND_21_HZ);
+  return;
 };
-imu_driver::step(){
-  mpu.getEvent(&_accelerometer, &_gyroscope, &_temperature);
+
+void imu_driver::step(){
+  /*
+  This method reads the data from the MPU and spits out the updated
+  struct ImuData.  
+  */
+  // Allocating local variables.
+  sensors_event_t accelerometer;
+  sensors_event_t gyroscope;
+  sensors_event_t temperature;
+  // MPU library
+  mpu.getEvent(&accelerometer, &gyroscope, &temperature);
+  // Assign to data struct()
+  data.acceleration[0] = accelerometer.acceleration.x;
+  data.acceleration[1] = accelerometer.acceleration.y;
+  data.acceleration[2] = accelerometer.acceleration.z;
+  data.angularRate[0] = gyroscope.gyro.x;
+  data.angularRate[1] = gyroscope.gyro.y;
+  data.angularRate[2] = gyroscope.gyro.z;
+  data.temperature = temperature.temperature;
+  return;
+
 }
-void imu_driver::get(double *acceleration, double *angular_rate ,float *temperature){
-  acceleration[0] = _accelerometer.acceleration.x;
-  acceleration[1] = _accelerometer.acceleration.y;
-  acceleration[2] = _accelerometer.acceleration.z;
-  angular_rate[0] = _gyroscope.gyro.x;
-  angular_rate[1] = _gyroscope.gyro.y;
-  angular_rate[2] = _gyroscope.gyro.z;
-  *temperature = _temperature.temperature;
+void imu_driver::get(ImuData* dataOut){
+  *dataOut = data;
   return;
 };
