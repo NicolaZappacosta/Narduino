@@ -9,6 +9,7 @@ executing the classes for the flight computer etc
 #include <Wire.h>
 #include "./src/fc/flight_computer.h"
 #include "./src/imu/imu_structs.h"
+#include "./src/fc/flight_computer_structs.h"
 
 flight_computer fc;
 unsigned long time_0;
@@ -32,12 +33,23 @@ void setup(void) {
 }
 
 void loop() {
-  Serial.println("Sto in loop()");
+  STATE_MACHINE StateMachine;
+  Serial.println("Sto in loop() --------------------------------");
   time_0 = millis();
+  fc.getCmd();
   fc.step();
+  fc.get_state_machine(&StateMachine);
   time_1 = millis();
+  // Print process time
   Serial.print("FC step time: ");
   Serial.print((time_1-time_0));
   Serial.println(" msec;");
+  // Separator
+  Serial.println("----------------------------------------------");
+  Serial.print("FC STATE: ");
+  Serial.println(StateMachine.FcState);
+  Serial.print("NAV STATE: ");
+  Serial.println(StateMachine.NavState);
+  Serial.println("----------------------------------------------");
   delay(1000-(time_1-time_0) );
 }
