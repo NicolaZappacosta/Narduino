@@ -13,14 +13,12 @@ enum FC_STATE{
     FC_AUGMENTED_NOMINAL,
 };
 
-struct StateMachine{
+struct STATE_MACHINE{
     FC_STATE FcState;
     NAVIGATION_STATE NavState;
-
 };
 
 struct FlightComputerState{
-    
-
+    STATE_MACHINE StateMachine;
 };
 #endif
