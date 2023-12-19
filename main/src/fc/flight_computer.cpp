@@ -1,9 +1,12 @@
 #include "./flight_computer.h"
 
 
+void flight_computer::get_state_machine(STATE_MACHINE* StateMachine){
+    *StateMachine = _state_machine_state;
+};
 flight_computer::flight_computer(){
     _state_machine_state.FcState = FC_IDLE;
-    _state_machine_state.NavState = IDLE;
+    _state_machine_state.NavState = NAV_IDLE;
 }
 flight_computer::step(){
     /*
@@ -32,7 +35,7 @@ void flight_computer::runNavigation(){
     double heading_meas = 3.14159265;
     float temperature_meas;
     NAVIGATION_STATE _navigation_state; // This can be centralized in struct()
-    _navigation_state = _state_machine_state->Navigation;
+    _navigation_state = _state_machine_state.NavState;
 
     getImuData(&data);
 
@@ -46,7 +49,7 @@ void flight_computer::runNavigation(){
 
     nav.step(_navigation_state, acceleration_meas, angular_rate_meas, position_meas, velocity_meas, &heading_meas);
 };
-
+/*
 NAVIGATION_STATE flight_computer::map2NavigationState(NAVIGATION_STATE _navigation_state){
     switch (_current_state){
         case FC_IDLE:
@@ -75,9 +78,9 @@ NAVIGATION_STATE flight_computer::map2NavigationState(NAVIGATION_STATE _navigati
     };
     return _navigation_state;
 };
-
+*/
 void flight_computer::getState(FC_STATE *fc_state){
-    *fc_state = _current_state;
+    *fc_state = _state_machine_state.FcState;
 };
 
 void flight_computer::setFC(int Baud_rate){
@@ -100,33 +103,40 @@ void flight_computer::getCmd(){
             // This special char is required for the atoi function()
             message[message_position] = "\0";
             int mode = atoi(message);
-            Serial.println("");
-            Serial.print("mode to select: ");
-            Serial.print(mode);
-            Serial.println("");
-            // Here you should develope a mode manager
+            /*
+            Here you should develope a mode manager...
+            Currently the state machine of the Navigation is one-to-one with the FC one.
+            A more complex logic can be impelmented.
+            */ 
 
             switch (mode) {
                 case 0:
-                    _current_state = FC_IDLE;
+                    _state_machine_state.FcState = FC_IDLE;
+                    _state_machine_state.NavState = NAV_IDLE;
                     break;
                 case 1:
-                    _current_state = FC_RESET;
+                    _state_machine_state.FcState = FC_RESET;
+                    _state_machine_state.NavState = NAV_RESET;
                     break;
                 case 2:
-                    _current_state = FC_INITIALIZATION;
+                    _state_machine_state.FcState = FC_INITIALIZATION;
+                    _state_machine_state.NavState = NAV_INITIALIZATION;
                     break;
                 case 3:
-                    _current_state =  FC_STATIC_TUNING;
+                    _state_machine_state.FcState = FC_STATIC_TUNING;
+                    _state_machine_state.NavState = NAV_STATIC_TUNING;
                     break;
                 case 4: // implement when 9 DOF is available
-                    _current_state = FC_DYNAMIC_TUNING;
+                    _state_machine_state.FcState = FC_DYNAMIC_TUNING;
+                    _state_machine_state.NavState = NAV_DYNAMIC_TUNING;
                     break;
                 case 5:
-                    _current_state = FC_NOMINAL;
+                    _state_machine_state.FcState = FC_NOMINAL;
+                    _state_machine_state.NavState = NAV_NOMINAL;
                     break;
                 case 6:
-                    _current_state = FC_AUGMENTED_NOMINAL;
+                    _state_machine_state.FcState = FC_AUGMENTED_NOMINAL;
+                    _state_machine_state.NavState = NAV_AUGMENTED_NOMINAL;
                     break;
                 default:
                     Serial.println("Unknown state");

@@ -20,6 +20,7 @@ private:
 public:
     flight_computer();
     step();
+    void get_state_machine(STATE_MACHINE* StateMachine);
     void getImuData(ImuData* data);
     void setImu(ImuSettings* settings);
     void setFC(int Baud_rate);
