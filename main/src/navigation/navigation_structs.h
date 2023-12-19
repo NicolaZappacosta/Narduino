@@ -1,0 +1,15 @@
+#ifndef NAVIGATION_STRUCTS_H
+#define NAVIGATION_STRUCTS_H
+
+enum NAVIGATION_STATE{
+    IDLE,
+    RESET,
+    INITIALIZATION,
+    STATIC_TUNING,
+    DYNAMIC_TUNING, // implement when 9 DOF is available
+    NOMINAL,
+    AUGMENTED_NOMINAL,
+};
+
+
+#endif

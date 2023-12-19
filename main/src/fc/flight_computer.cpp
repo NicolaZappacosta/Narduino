@@ -1,6 +1,14 @@
 #include "./flight_computer.h"
 
+
+flight_computer::flight_computer(){
+    _state_machine_state.FcState = FC_IDLE;
+    _state_machine_state.NavState = IDLE;
+}
 flight_computer::step(){
+    /*
+    Basic assumption is that the FC processes are synchronous. 
+    */
     imu.step();
     getCmd();
     runNavigation();
@@ -24,7 +32,7 @@ void flight_computer::runNavigation(){
     double heading_meas = 3.14159265;
     float temperature_meas;
     NAVIGATION_STATE _navigation_state; // This can be centralized in struct()
-    _navigation_state = map2NavigationState(_navigation_state);
+    _navigation_state = _state_machine_state->Navigation;
 
     getImuData(&data);
 

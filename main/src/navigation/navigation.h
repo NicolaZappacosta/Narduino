@@ -1,15 +1,7 @@
 #ifndef NAVIGATION_H
 #define NAVIGATION_H
 
-enum NAVIGATION_STATE{
-    IDLE,
-    RESET,
-    INITIALIZATION,
-    STATIC_TUNING,
-    DYNAMIC_TUNING, // implement when 9 DOF is available
-    NOMINAL,
-    AUGMENTED_NOMINAL,
-};
+#include "./navigation_structs.h"
 
 class navigation{
 private:

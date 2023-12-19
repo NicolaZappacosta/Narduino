@@ -9,25 +9,16 @@
 #include "../navigation/navigation.h"
 #include "../imu/imu_driver.h"
 #include "../imu/imu_structs.h"
-
-
-// THIS SHOULDN'T BE HERE
-enum FC_STATE{
-    FC_IDLE,
-    FC_RESET,
-    FC_INITIALIZATION,
-    FC_STATIC_TUNING,
-    FC_DYNAMIC_TUNING, // implement when 9 DOF is available
-    FC_NOMINAL,
-    FC_AUGMENTED_NOMINAL,
-};
+#include "./flight_computer_structs.h"
+#include "../navigation/navigation_structs.h"
 
 class flight_computer{
 private:
     imu_driver imu;
     navigation nav;
-    FC_STATE _current_state = FC_IDLE;
+    STATE_MACHINE _state_machine_state;
 public:
+    flight_computer();
     step();
     void getImuData(ImuData* data);
     void setImu(ImuSettings* settings);
