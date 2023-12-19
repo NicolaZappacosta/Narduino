@@ -2,13 +2,13 @@
 #define NAVIGATION_STRUCTS_H
 
 enum NAVIGATION_STATE{
-    IDLE,
-    RESET,
-    INITIALIZATION,
-    STATIC_TUNING,
-    DYNAMIC_TUNING, // implement when 9 DOF is available
-    NOMINAL,
-    AUGMENTED_NOMINAL,
+    NAV_IDLE,
+    NAV_RESET,
+    NAV_INITIALIZATION,
+    NAV_STATIC_TUNING,
+    NAV_DYNAMIC_TUNING, // implement when 9 DOF is available
+    NAV_NOMINAL,
+    NAV_AUGMENTED_NOMINAL,
 };
 
 
