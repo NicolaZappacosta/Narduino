@@ -14,7 +14,7 @@ private:
     double _accelerometer_misalignmet[3];
     double _covariance[12][12]; // find a way to extend it
     double _sampling_time;
-    NAVIGATION_STATE _current_state = IDLE;
+    NAVIGATION_STATE _current_state = NAV_IDLE;
 public:
     step(NAVIGATION_STATE state, double *acceleration, double *angular_rate, double *position, double *velocity, double *heading);
     resetInitialState(double *position, double *velocity, double *quaternion, double *covariance);

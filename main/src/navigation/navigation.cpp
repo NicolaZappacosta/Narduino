@@ -7,27 +7,27 @@ initialization Initialization;
 navigation::step(NAVIGATION_STATE state, double *acceleration, double *angular_rate, double *position, double *velocity, double *heading){
     _current_state = state;
     switch (_current_state){
-        case IDLE:
+        case NAV_IDLE:
             break;
-        case RESET:
+        case NAV_RESET:
             // We should change it to accept a structure
             Initialization.reset(position, velocity, acceleration);
             Initialization.getState(_position_ned, _velocity_ned, _quaternion_ned);
             break;
-        case INITIALIZATION:
+        case NAV_INITIALIZATION:
             Initialization.step(position, velocity, acceleration, heading);
             Initialization.getState(_position_ned, _velocity_ned, _quaternion_ned);
             break;
-        case STATIC_TUNING:
+        case NAV_STATIC_TUNING:
             // Do something
             break;
-        case DYNAMIC_TUNING:
+        case NAV_DYNAMIC_TUNING:
             // Do something
             break;
-        case NOMINAL:
+        case NAV_NOMINAL:
             // Do something
             break;
-        case AUGMENTED_NOMINAL:
+        case NAV_AUGMENTED_NOMINAL:
             // Do something 
             break;
     };
