@@ -24,30 +24,47 @@ void flight_computer::setImu(ImuSettings* settings){
     imu.set_imu_driver(settings);
 };
 
+void flight_computer::_get_gnss_measurement(Measuerements* meas){
+    // To be replaced with the GNSS driver
+    meas->GnssMeasurement.position_ned[0] = 48.359733;
+    meas->GnssMeasurement.position_ned[1] = 10.871368;
+    meas->GnssMeasurement.position_ned[2] = 507.;
+    meas->GnssMeasurement.velocity_ned[0] = 0.;
+    meas->GnssMeasurement.velocity_ned[1] = 0.;
+    meas->GnssMeasurement.velocity_ned[2] = 0.;
+    meas->GnssMeasurement.validity = true;
+    meas->GnssMeasurement.time_Stamp = 0;
+    for(int i=0; i<6; i++){
+        meas->GnssMeasurement.covariance[i][i] = 1;
+    };
+};
+
+void flight_computer::_get_magnetometer_measurement(Measuerements* meas){
+    // To be replaced with the magnetometer_driver/MPU_9050
+    meas->MagnetometerMeas.data[0] = 0.; 
+    meas->MagnetometerMeas.data[1] = 0.;
+    meas->MagnetometerMeas.data[2] = 0.;
+    meas->GnssMeasurement.validity = true;
+};
+
 void flight_computer::runNavigation(){
     
     ImuData data;
+    NAVIGATION_STATE _navigation_state; // This can be centralized in struct()
+    Measuerements meas;
     /*Hardcoded for now from the phone data since the 9-DOF sensor in not available
     You should implement a GNSS driver for this.
     */
-    double position_meas[3] = {48.359733, 10.871368, 507};
-    double velocity_meas[3] = {0, 0, 0};
-    double heading_meas = 3.14159265;
-    float temperature_meas;
-    NAVIGATION_STATE _navigation_state; // This can be centralized in struct()
-    _navigation_state = _state_machine_state.NavState;
 
+    _get_gnss_measurement(&meas);
+    _get_magnetometer_measurement(&meas);
+    double heading_meas = 3.14159265;
+    
+    _navigation_state = _state_machine_state.NavState;
+    // The magnetometer most likely will be included here.
     getImuData(&data);
 
-    // Interface layer - remove whenever possible
-    double acceleration_meas[3];
-    double angular_rate_meas[3];
-    for(int i; i<3; i++){
-        acceleration_meas[i] = data.acceleration[i];
-        angular_rate_meas[i] = data.angularRate[i];
-    }
-
-    nav.step(_navigation_state, acceleration_meas, angular_rate_meas, position_meas, velocity_meas, &heading_meas);
+    nav.step(_navigation_state, &meas, &data, heading_meas);
 };
 /*
 NAVIGATION_STATE flight_computer::map2NavigationState(NAVIGATION_STATE _navigation_state){
@@ -149,18 +166,6 @@ void flight_computer::getCmd(){
     }
 };
 
-void flight_computer::getNavigationState(double *estimated_position, double *estimated_velocity, double *estimated_quaternion){
-    double _position_ned[3];
-    double _velocity_ned[3];
-    double _quaternion_ned[4];
-
-    nav.getState(_position_ned, _velocity_ned, _quaternion_ned);
-
-    for(int i=0;i<3;i++){
-        estimated_position[i] = _position_ned[i];
-        estimated_velocity[i] = _velocity_ned[i];
-    };
-    for(int i=0;i<4;i++){
-        estimated_quaternion[i] = _quaternion_ned[i];
-    };
+void flight_computer::getNavigationState(NavigationEstimationNED* navState){
+    nav.getState(navState);
 };

@@ -11,9 +11,11 @@ void imu_driver::_set_accelerometers(ImuSettings* settings){
   switch (settings->ACCELEROMETERS_RANGE)
   {
   case 8:
+    Serial.println("Sto qui");
     range_setting = MPU6050_RANGE_8_G;
     break;
   default:
+    Serial.println("No scherzo sto qui");
     break;
   }
   mpu.setAccelerometerRange(range_setting);
@@ -42,12 +44,10 @@ PUBLIC METHODS -----------------------------------------------------------
 */
 void imu_driver::set_imu_driver(ImuSettings* settings){
     // Try to initialize!
-  if (!mpu.begin()) {
-    while (1) {
-      delay(10);
-    }
-  }
-
+  while (!mpu.begin())
+  {
+    delay(10);
+  };
   _set_accelerometers(settings);
   _set_gyroscopes(settings);
   // Here a wrapper function shall be created

@@ -5,6 +5,7 @@
 #include <Adafruit_Sensor.h>
 #include "./imu_structs.h"
 #include <Wire.h>
+#include <Arduino.h>
 
 class imu_driver{
 private:

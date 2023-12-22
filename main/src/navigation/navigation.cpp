@@ -1,22 +1,26 @@
 #include "./navigation.h"
 #include "./support_package/initialization.h"
-#include <Arduino.h>
 
 initialization Initialization;
 
-navigation::step(NAVIGATION_STATE state, double *acceleration, double *angular_rate, double *position, double *velocity, double *heading){
+void navigation::step(NAVIGATION_STATE state, Measuerements* meas, ImuData* imuData, double heading){
+
     _current_state = state;
     switch (_current_state){
         case NAV_IDLE:
             break;
         case NAV_RESET:
             // We should change it to accept a structure
-            Initialization.reset(position, velocity, acceleration);
-            Initialization.getState(_position_ned, _velocity_ned, _quaternion_ned);
+            Initialization.reset();
+            Initialization.getState(&NavigationEstimation);
             break;
         case NAV_INITIALIZATION:
-            Initialization.step(position, velocity, acceleration, heading);
-            Initialization.getState(_position_ned, _velocity_ned, _quaternion_ned);
+            // A magnetometer calibration procedure shall be modelled. 
+            // See: https://www.sciencedirect.com/science/article/pii/S1474667016415983
+            // The initialization shall be changed since the heading wont be available.
+            // See: https://www.mdpi.com/1424-8220/21/6/2040
+            Initialization.step(meas, imuData, heading);
+            Initialization.getState(&NavigationEstimation);
             break;
         case NAV_STATIC_TUNING:
             // Do something
@@ -33,12 +37,6 @@ navigation::step(NAVIGATION_STATE state, double *acceleration, double *angular_r
     };
 };
 
-navigation::getState(double *estimated_position, double *estimated_velocity, double *estimated_quaternion){
-    for(int i=0;i<3;i++){
-        estimated_position[i] = _position_ned[i];
-        estimated_velocity[i] = _velocity_ned[i];
-    };
-    for(int i=0;i<4;i++){
-        estimated_quaternion[i] = _quaternion_ned[i];
-    };
+void navigation::getState(NavigationEstimationNED* navState){
+    *navState =  NavigationEstimation;
 };

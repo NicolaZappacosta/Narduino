@@ -2,55 +2,59 @@
 #include <math.h>
 
 initialization::initialization(){
+    // The constructor sets everything to zero.
     for(int i = 0; i<3; i++){
         _avg_acceleration[i] = 0;
         _position[i] = 0;
         _velocity[i] = 0; 
     };
+    _accomulated_samples = 0;
 };
 void initialization::_compute_inclination(double *roll, double *pitch){
-return;
+    //TODO
+    return;
 };
 
 void initialization::_compute_avg(double *acceleration){
     for(int i = 0; i<3; i++){
         _avg_acceleration[i] = _avg_acceleration[i]*_accomulated_samples/(_accomulated_samples+1)+acceleration[i]/_accomulated_samples; 
+        // We should compute the avg position too and the data shall be in a struct.
     };
     _accomulated_samples++;
     return;
 };
 
-void initialization::reset(double *position, double *velocity, double *acceleration){
+void initialization::reset(){
     for(int i = 0; i<3; i++){
-        _avg_acceleration[i] = acceleration[i];
+        _avg_acceleration[i] = 0;
         _position[i] = 0;
         _velocity[i] = 0; 
     };
     for(int i = 0; i<4; i++){
         _quaternion[i] = 0; 
     };
-    _accomulated_samples = 1;
+    _accomulated_samples = 0;
     return;
 };
 
-void initialization::step(double *position, double *velocity, double *acceleration, double *heading){
+void initialization::step(Measuerements* Meas, ImuData* ImuData, double heading){
     
     double roll;
     double pitch;
     double yaw;
 
     for(int i = 0; i<3; i++){
-        _position[i] = position[i];
-        _velocity[i] = velocity[i]; 
+        _position[i] = Meas->GnssMeasurement.position_ned[i];
+        _velocity[i] = Meas->GnssMeasurement.velocity_ned[i]; 
     };
-    _compute_avg(acceleration);
+    _compute_avg(ImuData->acceleration);
     /*
     Here the assumption is made where the vertical axis is the same as the MPU and it's
     the z-axis.
     */
     roll = _avg_acceleration[1]/_avg_acceleration[2];
     pitch = _avg_acceleration[0]/_avg_acceleration[2];
-    yaw =  *heading;
+    yaw =  heading;
 
     euler2quaternion(roll, pitch, yaw);
 
@@ -73,13 +77,13 @@ void initialization::euler2quaternion(double roll, double pitch, double yaw){
 
 };
 
-void initialization::getState(double *position, double *velocity, double* quaternion){
+void initialization::getState(NavigationEstimationNED* NavigationEstimation){
     for(int i = 0; i<3; i++){
-        position[i] = _position[i];
-        velocity[i] = _velocity[i]; 
+        NavigationEstimation->position_ned[i] = _position[i];
+        NavigationEstimation->velocity_ned[i] = _velocity[i]; 
     };
     for(int i = 0; i<4; i++){
-        quaternion[i] = _quaternion[i]; 
+       NavigationEstimation->quaternion_ned[i] = _quaternion[i]; 
     };
 };
 

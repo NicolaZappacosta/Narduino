@@ -14,9 +14,13 @@
 
 class flight_computer{
 private:
+    //Attributes
     imu_driver imu;
     navigation nav;
     STATE_MACHINE _state_machine_state;
+    // Methods
+    void _get_gnss_measurement(Measuerements* meas);
+    void _get_magnetometer_measurement(Measuerements* meas);
 public:
     flight_computer();
     step();
@@ -28,7 +32,7 @@ public:
     NAVIGATION_STATE map2NavigationState(NAVIGATION_STATE _navigation_state);
     void getState(FC_STATE *fc_state);
     void getCmd();
-    void getNavigationState(double *estimated_position, double *estimated_velocity, double *estimated_quaternion);
+    void getNavigationState(NavigationEstimationNED* navState);
 };  
 
 #endif

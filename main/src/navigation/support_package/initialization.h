@@ -1,9 +1,8 @@
 #ifndef INITIALIZATION_H
 #define INITIALIZATION_H
 
-#include <Adafruit_MPU6050.h>
-#include <Adafruit_Sensor.h>
-#include <Wire.h>
+#include "../navigation_structs.h"
+#include "../../imu/imu_structs.h"
 
 class initialization{
 private:
@@ -20,10 +19,10 @@ private:
 
 public:
     initialization();
-    void reset(double *position, double *velocity, double *acceleration);
-    void step(double *position, double *velocity, double *acceleration, double *heading);
+    void reset();
+    void step(Measuerements* Meas, ImuData* ImuData, double heading);
     void euler2quaternion(double roll, double pitch, double yaw);
-    void getState(double *position, double *velocity, double* quaternion);
+    void getState(NavigationEstimationNED* NavigationEstimation);
 };
 
 #endif
